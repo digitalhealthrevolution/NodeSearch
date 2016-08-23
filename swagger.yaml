@@ -1,0 +1,113 @@
+---
+swagger: '2.0'
+info:
+  title: ServiceRegistry
+  version: "Release 1.2-New interfaces implemented with Node.js"
+  description: 'Service Registry interface enbaling searching of services and information related to them.'
+host: example.com
+schemes:
+  - https
+
+basePath: /api/v1
+produces:
+  - application/json
+paths:
+  /services/:
+    get:
+      summary: 'List of services'
+      parameters:
+        - name: serviceType
+          in: query
+          description: 'serviceType: input / output'
+          required: false
+          type: string
+        - name: groupBy
+          in: query
+          description: 'Grouping of results e.g. based on serviceType - separate lists of data sinks and data sources. Does nothing at the moment.'
+          required: false
+          type: string
+      responses:
+        200:
+          description: List of services
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Service'
+            
+  
+  /services/search/:
+    get:
+      summary: 'Searching services based on a searchterm'
+      parameters:
+        - name: searchTerm
+          in: query
+          description: 'Used search term.'
+          required: true
+          type: string
+        - name: serviceType
+          in: query
+          description: 'serviceType: input / output'
+          required: false
+          type: string
+        - name: groupBy
+          in: query
+          description: 'Grouping of results e.g. based on serviceType - separate lists of data sinks and data sources. Does nothing at the moment.'
+          required: false
+          type: string
+      responses:
+        200:
+          description: 'List of services'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Service'
+              
+  
+  /services/{service_id}:
+    get:
+      summary: 'Getting service related data based on service ID'
+      parameters:
+        - name: service_id
+          in: path
+          description: 'Service ID'
+          required: true
+          type: string
+      responses:
+        200:
+          description: 'Services'
+          schema:
+              $ref: '#/definitions/Service'
+              
+  
+  /services/{service_id}/compatible/:
+    get:
+      summary: 'List of compatible services'
+      parameters:
+        - name: service_id
+          in: path
+          description: 'Service ID'
+          required: true
+          type: string
+        - name: serviceType
+          in: query
+          description: 'serviceType: input / output'
+          required: true
+          type: string
+        - name: groupBy
+          in: query
+          description: 'Grouping of results e.g. based on serviceType - separate lists of data sinks and data sources. Does nothing at the moment.'
+          required: true
+          type: string
+      responses:
+        200:
+          description: 'List of compatible services'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Service'
+
+definitions:
+  Service:
+    type: object
+    description: 'Service'
+
