@@ -2,7 +2,7 @@
 Node.js server search add-on to ServiceRegistry
 
 copy server.js to target directory
-open server.js 
+open server.js
 check mongoConnStr username, pwd, host, port and db name are correct, 
 eg mongoConnStr ="mongodb://Service:dhrproject@localhost:27017/ServiceRegistry”;
 (string format mongodb://username:password@serve:port/DB name)
