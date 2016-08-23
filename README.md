@@ -18,3 +18,8 @@ $ npm install express --save
 $ npm install mongodb --save
 $ npm install --save object-assign
 ```
+
+Running:
+```sh
+$ nohup node server.js
+```
