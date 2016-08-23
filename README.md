@@ -21,5 +21,5 @@ $ npm install --save object-assign
 
 Running:
 ```sh
-$ nohup node server.js
+$ node server.js
 ```
