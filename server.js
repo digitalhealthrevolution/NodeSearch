@@ -2,7 +2,9 @@ var express = require('express');
 var app = express();
 var port = 8081;
 var MongoClient = require('mongodb').MongoClient;
-var mongoConnStr = "mongodb://Service:dhrproject@localhost:27017/serviceregistry";
+//var mongoConnStr = "mongodb://Service:dhrproject@localhost:27017/serviceregistry";
+//Dockerize: localhost -> mongo
+var mongoConnStr = "mongodb://Service:dhrproject@mongo:27017/serviceregistry";
 var version = "v1";
 var basePath = "/api/" + version;
 
