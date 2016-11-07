@@ -8,12 +8,10 @@ var mongoConnStr = "mongodb://Service:dhrproject@mongo:27017/serviceregistry";
 var version = "v1";
 var basePath = "/api/" + version;
 
-app.use(express.static('public'));
-
 // MongoDB should be updated with following indeces:
 // db.serviceregistry.createIndex({"$**":"text"},{ default_language: "finnish" })
 // db.serviceregistry.createIndex({"serviceDescription.serviceDataDescription.dataset.serviceDataType":1})
-app.get(basePath + '/services/search', function (req, res){
+app.get(basePath + '/services/search', function (req, res, next){
   
   var searchTerm = req.query.searchTerm;
   var serviceType = req.query.serviceType;
@@ -26,7 +24,7 @@ app.get(basePath + '/services/search', function (req, res){
 	if (searchTerm != null && searchTerm.length > 0) {
 	  MongoClient.connect(mongoConnStr, function(err, db) {
 		if (err) {
-		  throw err;
+		  return next(err);
 		}
 		db.collection('serviceregistry')
 		.aggregate([
@@ -36,9 +34,10 @@ app.get(basePath + '/services/search', function (req, res){
 		])
 		.toArray(function(err, result) {
 		  if (err) {
-			throw err;
+			return next(err);
 		  }
 		  res.send(JSON.stringify(result));
+		  db.close();
 		});
 	  });
 	}
@@ -46,7 +45,7 @@ app.get(basePath + '/services/search', function (req, res){
   
 });
 
-app.get(basePath + '/services', function (req, res){
+app.get(basePath + '/services', function (req, res, next){
 
   var serviceType = req.query.serviceType;
   if (serviceType != null && serviceType.length > 0 && (serviceType == 'input' || serviceType == 'output')) {}
@@ -57,35 +56,37 @@ app.get(basePath + '/services', function (req, res){
 
   MongoClient.connect(mongoConnStr, function(err, db) {
     if (err) {
-      throw err;
+		return next(err);
     }
     db.collection('serviceregistry').find({"serviceDescription.serviceDataDescription.dataset.serviceDataType": serviceType})
     .toArray(function(err, result) {
       if (err) {
-        throw err;
+		return next(err);
       }
       res.send(JSON.stringify(result));
+      db.close();
     });
   });
 });
 
-app.get(basePath + '/services/:service_id', function (req, res){
+app.get(basePath + '/services/:service_id', function (req, res, next){
 
   MongoClient.connect(mongoConnStr, function(err, db) {
     if (err) {
-      throw err;
+		return next(err);
     }
     
     db.collection('serviceregistry').find( {"serviceId" : req.params.service_id} ).toArray(function(err, result) {
       if (err) {
-        throw err;
+		return next(err);
       }
       res.send(JSON.stringify(result));
+      db.close();
     });
   });
 });
 
-app.get(basePath + '/services/:service_id/compatible', function (req, res){
+app.get(basePath + '/services/:service_id/compatible', function (req, res, next){
 
   var serviceType = req.query.serviceType;
   if (serviceType != null && serviceType.length > 0 && (serviceType == 'input' || serviceType == 'output')) {}
@@ -96,26 +97,38 @@ app.get(basePath + '/services/:service_id/compatible', function (req, res){
 
   MongoClient.connect(mongoConnStr, function(err, db) {
     if (err) {
-      throw err;
+		return next(err);
     }
     
     db.collection('serviceregistry')
     .find( {"serviceId" : req.params.service_id}, { "serviceDescription.compatibleServices" : 1 } )
     .toArray(function(err, result) {
       if (err) {
-        throw err;
+		return next(err);
       }
+      if (result.length > 0) {
           db.collection('serviceregistry')
           .find( {"serviceId" : { $in : result[0].serviceDescription.compatibleServices },
             "serviceDescription.serviceDataDescription.dataset.serviceDataType": serviceType} )
           .toArray(function(err, result2) {
             if (err) {
-              throw err;
+		  		return next(err);
             }
             res.send(JSON.stringify(result2));
+            db.close();
           });
+	  }
+	  else {
+	    res.send(JSON.stringify(result));
+        db.close();
+      }
     });
   });
+});
+
+app.use(function(err, req, res, next) {
+	res.status(500);
+	res.send(err.message);
 });
 
 var server = app.listen(port, function () {
